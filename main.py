@@ -6,6 +6,7 @@ import os
 import fitz
 import json
 import re
+import pprint
 
 load_dotenv()
 
@@ -27,7 +28,7 @@ def analyze_cv(file_path: str = Body(...), position: str = Body(...)):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted")
     
     rating=analyze_cv_byAi(file_path,position)
-    
+    pprint.pprint(rating)
     return{
         "data":rating
     }
