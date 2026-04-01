@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Form , Body
 from typing import List
 from dotenv import load_dotenv
 from google import genai
@@ -18,7 +18,8 @@ def home():
     return {"message": "Ai cv analyzer is running"}
 
 @app.post("/analyze-cv")
-def analyze_cv(file_path: str= Form(...), position:str =Form(...)):
+def analyze_cv(file_path: str = Body(...), position: str = Body(...)):
+    print(file_path)
     if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail="File not found at given path")
 
