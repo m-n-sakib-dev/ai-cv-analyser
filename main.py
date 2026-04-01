@@ -15,9 +15,23 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"message": "Hello World!"}
+    return {"message": "Ai cv analyzer is running"}
 
-@app.post("/upload-cv")
+@app.post("/analyze-cv")
+def analyze_cv(file_path: str= Form(...), position:str =Form(...)):
+    if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="File not found at given path")
+
+    if not file_path.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are accepted")
+    
+    rating=analyze_cv_byAi(file_path,position)
+    
+    return{
+        "data":rating
+    }
+
+@app.post("/sort-cv")
 def upload_cv(file_paths: List[str] = Form(...), position:str =Form(...)):
     rating=[]
     for file_path in file_paths:
@@ -27,16 +41,18 @@ def upload_cv(file_paths: List[str] = Form(...), position:str =Form(...)):
         if not file_path.endswith(".pdf"):
             raise HTTPException(status_code=400, detail="Only PDF files are accepted")
 
-        rating.append(analyze_cv(file_path,position))
+        rating.append(analyze_cv_byAi(file_path,position))
     print(rating)
+    sorted_rating = sorted(rating, key=lambda x: float(x['rating']), reverse=True)
+    print(sorted_rating)
     return{
-        "data":rating
+        "data":sorted_rating
     }
    
 
 
 
-def analyze_cv(file_path:str, position:str):
+def analyze_cv_byAi(file_path:str, position:str):
         pdf = fitz.open(file_path)
         text = ""
         for page in pdf:
@@ -59,7 +75,7 @@ def analyze_cv(file_path:str, position:str):
             model="gemini-2.5-flash",
             contents=prompt
         )
-        print(response)
+        print(response.text)
         # clean_json = re.search(r'\{.*\}', response.text, re.DOTALL).group()
         # data = json.loads(clean_json)
         return {
