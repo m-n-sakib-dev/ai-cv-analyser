@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Form
+from typing import List
 from dotenv import load_dotenv
 from google import genai
 import os
@@ -17,14 +18,16 @@ def home():
     return {"message": "Hello World!"}
 
 @app.post("/upload-cv")
-def upload_cv(file_path: str = Form(...), position:str =Form(...)):
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found at given path")
+def upload_cv(file_paths: List[str] = Form(...), position:str =Form(...)):
+    rating=[]
+    for file_path in file_paths:
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="File not found at given path")
 
-    if not file_path.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are accepted")
+        if not file_path.endswith(".pdf"):
+            raise HTTPException(status_code=400, detail="Only PDF files are accepted")
 
-    rating=analyze_cv(file_path,position)
+        rating.append(analyze_cv(file_path,position))
     print(rating)
     return{
         "data":rating
